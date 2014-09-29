@@ -2,6 +2,10 @@
   "name": "tumblr-scraper",
   "version": "1.0.0",
   "description": "",
+  "repository": {
+    "type" : "git",
+    "url" : "git@github.com:Coornail/tumblr-scraper.git"
+  },
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/gulp lint:js"
