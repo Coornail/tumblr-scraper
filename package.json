@@ -1,0 +1,27 @@
+{
+  "name": "tumblr-scraper",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "GPL3",
+  "dependencies": {
+    "async": "^0.9.0",
+    "clivas": "^0.1.4",
+    "download": "^3.0.1",
+    "filesize": "^2.0.3",
+    "lodash": "^2.4.1",
+    "log-symbols": "^1.0.0",
+    "progress": "^1.1.8",
+    "tumblr.js": "0.0.4",
+    "yargs": "^1.3.1"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.8",
+    "gulp-jshint": "^1.8.4",
+    "jshint-stylish": "^1.0.0"
+  }
+}
