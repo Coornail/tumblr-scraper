@@ -1,13 +1,7 @@
 'use strict';
 
-var DownloadHandler = require('download');
 var TumblrScraper = require('./libs/tumblr-post-download');
-var async = require('async');
-var _ = require('lodash');
 var cliOutput = require('./libs/cli-output');
-var path = require('path');
-var fs = require('fs');
-var logSymbols = require('log-symbols');
 
 var argv = require('yargs')
   .usage('Usage: --blog [blogname]')
@@ -27,27 +21,31 @@ var argv = require('yargs')
     default : 1,
     describe: 'Maximum number of pages to scan.'
   })
+  .options('destination', {
+    alias : 'd',
+    describe: 'Directory to download the images to.'
+  })
   .argv;
 
-var blogName = argv.blog;
-var maxPages = argv.maxPages;
-var queryOptions = {};
-queryOptions.tag = argv.tag;
-
-var queryParams = [];
-
-for (var i=0; i<maxPages; i++) {
-  queryParams[i] = _.clone(queryOptions);
-  queryParams[i].page = i;
+// Prepare options.
+var pages = [];
+for (var i=0; i < argv.maxPages; i++) {
+  pages.push(i);
 }
 
-var blog = new TumblrScraper(blogName);
+var options = {
+  pages: pages,
+  tag: argv.tag
+};
 
-async.mapLimit(queryParams, argv.concurrency, function (item, cb) {blog.getPhotosFromBlog(item, cb);});
-//blog.getPhotosFromBlog(queryParams[0]);
+if (argv.destination !== undefined) {
+  options.destination = argv.destination;
+}
 
+// Start download pages.
+var blog = new TumblrScraper(argv.blog);
+blog.getPhotos(options);
 
-cliOutput.blogName = blogName;
-cliOutput.maxPages = maxPages;
-cliOutput.tag = queryOptions.tag;
-cliOutput.renderLoop();
+// Output render loop.
+var view = new cliOutput(blog);
+view.renderLoop();

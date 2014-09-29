@@ -6,37 +6,21 @@ var filesize = require('filesize');
 var fs = require('fs');
 var _ = require('lodash');
 
-var cliOutput = {
-  numberOfImages: undefined,
-  maxPages: undefined,
-  blogName: undefined,
-  tag: undefined,
-  status: []
-};
-
-/**
- * Adds a status report line.
- *
- * @param report
- *   {
- *     image: [image filename],
- *     error: (Optional) error string
- *   }
- */
-cliOutput.addStatus = function(report) {
-  this.status.push(report);
+var TumblrScraperCliView = function(blog) {
+  this.blog = blog;
 };
 
 /**
  * Sets up the render loop for drawing.
  */
-cliOutput.renderLoop = function() {
+TumblrScraperCliView.prototype.renderLoop = function() {
   process.stdout.write(new Buffer('G1tIG1sySg==', 'base64'));
-  cliOutput.loop = setInterval(this.draw, 500);
+  var that = this;
+  this.loop = setInterval(function() {that.draw();}, 1000);
   this.draw();
 };
 
-cliOutput.drawStatusLine = function(item) {
+TumblrScraperCliView.prototype.drawStatusLine = function(item) {
   if (item.skipped !== undefined) {
     clivas.line('  ' + logSymbols.warning + ' {64:' + item.path + '} (skipped)');
     return;
@@ -53,20 +37,20 @@ cliOutput.drawStatusLine = function(item) {
 /**
  * Callback to draw the cli output.
  */
-cliOutput.draw = function() {
+TumblrScraperCliView.prototype.draw = function() {
   clivas.clear();
-  clivas.line(logSymbols.info + ' Downloading ' + cliOutput.maxPages + ' pages from ' + cliOutput.blogName + ((cliOutput.tag !== '') ? (' (tag: ' + cliOutput.tag + ')') : ''));
-  if (cliOutput.numberOfImages !== undefined) {
-    var symbol = (cliOutput.numberOfImages === 0 ) ? logSymbols.warning : logSymbols.info;
-    clivas.line(symbol + ' Downloaded ' + cliOutput.status.length + '/' + cliOutput.numberOfImages);
+  clivas.line(logSymbols.info + ' Downloading ' + this.blog.pages.length + ' pages from ' + this.blog.blogName + ((this.blog.tag !== '') ? (' (tag: ' + this.blog.tag + ')') : ''));
+  if (this.blog.numberOfImages !== undefined) {
+    var symbol = (this.blog.numberOfImages === 0 ) ? logSymbols.warning : logSymbols.info;
+    clivas.line(symbol + ' Downloaded ' + this.blog.status.length + '/' + this.blog.numberOfImages);
   }
 
-  var fromLines = cliOutput.status.length - 32;
-  _.tail(cliOutput.status, fromLines).forEach(cliOutput.drawStatusLine);
+  var fromLines = this.blog.status.length - 32;
+  _.tail(this.blog.status, fromLines).forEach(this.drawStatusLine);
 
-  if (cliOutput.numberOfImages === cliOutput.status.length) {
-    clearInterval(cliOutput.loop);
+  if (this.blog.numberOfImages === this.blog.status.length) {
+    clearInterval(this.loop);
   }
 };
 
-module.exports = cliOutput;
+module.exports = TumblrScraperCliView;
