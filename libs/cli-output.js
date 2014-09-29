@@ -20,6 +20,11 @@ TumblrScraperCliView.prototype.renderLoop = function() {
   this.draw();
 };
 
+/**
+ * Render a line for an image status.
+ *
+ * @see TumblrScraper.status
+ */
 TumblrScraperCliView.prototype.drawStatusLine = function(item) {
   if (item.skipped !== undefined) {
     clivas.line('  ' + logSymbols.warning + ' {64:' + item.path + '} (skipped)');
