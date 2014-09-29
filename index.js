@@ -2,6 +2,7 @@
 
 var TumblrScraper = require('./libs/tumblr-post-download');
 var cliOutput = require('./libs/cli-output');
+var _ = require('lodash');
 
 var argv = require('yargs')
   .usage('Usage: --blog [blogname]')
@@ -29,13 +30,8 @@ var argv = require('yargs')
   .argv;
 
 // Prepare options.
-var pages = [];
-for (var i=0; i < argv.maxPages; i++) {
-  pages.push(i);
-}
-
 var options = argv;
-options.pages = pages;
+options.pages = _.range(argv.maxPages);
 
 // Start download pages.
 var blog = new TumblrScraper(options.blog);
