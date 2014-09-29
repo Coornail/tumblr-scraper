@@ -38,7 +38,7 @@ options.pages = pages;
 
 // Start download pages.
 var blog = new TumblrScraper(options.blog);
-blog.getPhotos(options, function(err, data) {});
+blog.getPhotos(options);
 
 // Output render loop.
 var view = new cliOutput(blog);

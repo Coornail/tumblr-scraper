@@ -16,7 +16,7 @@ var TumblrScraper = function(blogName) {
   this.concurrency = 4;
 };
 
-TumblrScraper.prototype.getPhotos = function(options, callback) {
+TumblrScraper.prototype.getPhotos = function(options) {
   var that = this;
 
   this.tag = options.tag;
@@ -34,7 +34,6 @@ TumblrScraper.prototype.getPhotos = function(options, callback) {
   });
 
   var processCallback = function(err, results) {
-    var images = _.flatten(results);
     that.processFiles(err, results);
   };
 
@@ -42,7 +41,6 @@ TumblrScraper.prototype.getPhotos = function(options, callback) {
 };
 
 TumblrScraper.prototype.processPage = function(options, callback) {
-  var that = this;
   var maxPostsPerPage = 20;
 
   options.limit = maxPostsPerPage;
