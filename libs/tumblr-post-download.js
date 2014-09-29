@@ -7,6 +7,7 @@ var path = require('path');
 var fs = require('fs');
 var DownloadHandler = require('download');
 var logSymbols = require('log-symbols');
+var jsonPath = require('JSONPath');
 
 var TumblrScraper = function(blogName) {
   this.blogName = blogName;
@@ -60,8 +61,6 @@ TumblrScraper.prototype.processPage = function(options, callback) {
   options.limit = maxPostsPerPage;
   options.offset = (options.page === undefined) ? 0 : options.page * maxPostsPerPage;
 
-  var photos = [];
-
   var client = tumblr.createClient(require('../config/tumblr.json'));
   if (!client) {
     callback('Could not connect to Tumblr.');
@@ -69,28 +68,15 @@ TumblrScraper.prototype.processPage = function(options, callback) {
   }
 
   client.posts(this.blogName, options, function(err, data) {
-    /*jshint camelcase: false */
     if (err) {
       callback('Authentication failure.\nYou might have to set up config/tumblr.json first.');
       return;
     }
 
-    data.posts.forEach(function (post) {
-      photos.push(post.photos);
-    });
-
-    var extracted_photos = [];
-    photos.forEach(function(imageSet) {
-      if (imageSet !== undefined) {
-        imageSet.forEach(function(image) {
-          if (image.original_size !== undefined && image.original_size.url) {
-            extracted_photos.push(image.original_size.url);
-          }
-        });
-      }
-    });
-
-    callback(null, extracted_photos);
+    /* jshint evil:true */
+    // Not the eval() we hate.
+    var extractedPhotos = jsonPath.eval(data.posts, '*.photos.*.original_size.url');
+    callback(null, extractedPhotos);
   });
 };
 
