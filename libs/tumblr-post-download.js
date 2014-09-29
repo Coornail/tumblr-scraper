@@ -69,6 +69,7 @@ TumblrScraper.prototype.processPage = function(options, callback) {
   }
 
   client.posts(this.blogName, options, function(err, data) {
+    /*jshint camelcase: false */
     if (err) {
       callback('Authentication failure.\nYou might have to set up config/tumblr.json first.');
       return;
