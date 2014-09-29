@@ -21,6 +21,7 @@ var argv = require('yargs')
     default : 1,
     describe: 'Maximum number of pages to scan.'
   })
+  .boolean('force').describe('force', 'Download images even if they exists in the current directory.').default('force', false)
   .options('destination', {
     alias : 'd',
     describe: 'Directory to download the images to.'

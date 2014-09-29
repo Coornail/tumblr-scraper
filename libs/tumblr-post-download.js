@@ -14,15 +14,29 @@ var TumblrScraper = function(blogName) {
   this.tag = '';
   this.pages = [];
   this.concurrency = 4;
+  this.force = false;
 };
 
+/**
+ * Get photos based on some criteria.
+ *
+ * @param options object
+ *   Criteria for the image download.
+ *   Possible options:
+ *     - tag (string): Tumblr tag to limit the query to.
+ *     - destination (string): Directory to download the files.
+ *     - concurrency (int): How many concurrent threads used to download the files.
+ *     - force (bool): Overwrite existing files.
+ *     - pages (array): Pages of posts to download.
+ */
 TumblrScraper.prototype.getPhotos = function(options) {
   var that = this;
 
-  this.tag = options.tag;
-  this.pages = options.pages;
+  this.tag = options.tag || '';
+  this.pages = options.pages || [1];
   this.destination = options.destination || './' + this.blogName + '/';
   this.concurrency = options.concurrency || 4;
+  this.force = options.force || false;
 
   // Prepare query params.
   var queryParams = [];
@@ -91,7 +105,7 @@ TumblrScraper.prototype.downloadImages = function(images) {
       'path': imagePath
     };
 
-    if (fs.existsSync(imagePath)) {
+    if ((!that.force) && fs.existsSync(imagePath)) {
       report.skipped = true;
       that.status.push(report);
       callback();
