@@ -26,16 +26,18 @@ TumblrScraperCliView.prototype.renderLoop = function() {
  * @see TumblrScraper.status
  */
 TumblrScraperCliView.prototype.drawStatusLine = function(item) {
-  if (item.skipped !== undefined) {
-    clivas.line('  ' + logSymbols.warning + ' {64:' + item.path + '} (skipped)');
-    return;
-  }
+  switch (item.status) {
+    case 'skipped':
+      clivas.line('  ' + logSymbols.warning + ' {64:' + item.path + '} (skipped)');
+      break;
 
-  if (item.error === undefined){
-    var stats = fs.statSync(item.path);
-    clivas.line('  ' + logSymbols.success + ' {64:' + item.path + '} ' + '{yellow:' + filesize(stats.size) + '}');
-  } else {
-    clivas.line('  ' + logSymbols.error + ' ' + item.image + ' (' + item.error + ')');
+    case 'error':
+      clivas.line('  ' + logSymbols.error + ' ' + item.image + ' (' + item.error + ')');
+      break;
+
+    default:
+      var stats = fs.statSync(item.path);
+      clivas.line('  ' + logSymbols.success + ' {64:' + item.path + '} ' + '{yellow:' + filesize(stats.size) + '}');
   }
 };
 

@@ -89,11 +89,12 @@ TumblrScraper.prototype.downloadImages = function(images) {
 
     var report = {
       'image': image,
-      'path': imagePath
+      'path': imagePath,
+      'status': 'success'
     };
 
     if ((!that.force) && fs.existsSync(imagePath)) {
-      report.skipped = true;
+      report.status = 'skipped';
       that.status.push(report);
       callback();
     } else {
@@ -103,6 +104,7 @@ TumblrScraper.prototype.downloadImages = function(images) {
 
           if (err) {
             callback(err);
+            report.status = 'error';
             report.error = err;
           }
 
