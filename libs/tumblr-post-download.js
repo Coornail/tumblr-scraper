@@ -13,6 +13,7 @@ var TumblrScraper = function(blogName) {
   this.status = [];
   this.tag = '';
   this.pages = [];
+  this.concurrency = 4;
 };
 
 TumblrScraper.prototype.getPhotos = function(options, callback) {
@@ -20,9 +21,8 @@ TumblrScraper.prototype.getPhotos = function(options, callback) {
 
   this.tag = options.tag;
   this.pages = options.pages;
-  this.destination = options.destination || './' + this.blogName;
-
-  var concurency = options.concurency || 4;
+  this.destination = options.destination || './' + this.blogName + '/';
+  this.concurrency = options.concurrency || 4;
 
   // Prepare query params.
   var queryParams = [];
@@ -33,7 +33,12 @@ TumblrScraper.prototype.getPhotos = function(options, callback) {
     queryParams.push(downloadOptions);
   });
 
-  async.mapLimit(queryParams, concurency, function (item, cb) {that.processPage(item, cb);}, callback);
+  var processCallback = function(err, results) {
+    var images = _.flatten(results);
+    that.processFiles(err, results);
+  };
+
+  async.mapLimit(queryParams, this.concurrency, function (item, cb) {that.processPage(item, cb);}, processCallback);
 };
 
 TumblrScraper.prototype.processPage = function(options, callback) {
@@ -72,7 +77,7 @@ TumblrScraper.prototype.processPage = function(options, callback) {
       }
     });
 
-    that.processFiles(null, extracted_photos);
+    callback(null, extracted_photos);
   });
 };
 
@@ -109,7 +114,7 @@ TumblrScraper.prototype.downloadImages = function(images) {
     }
   };
 
-  async.eachLimit(images, 4, downloadSingleImage);
+  async.eachLimit(images, this.concurrency, downloadSingleImage);
 };
 
 TumblrScraper.prototype.processFiles = function (err, results) {

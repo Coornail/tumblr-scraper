@@ -33,18 +33,12 @@ for (var i=0; i < argv.maxPages; i++) {
   pages.push(i);
 }
 
-var options = {
-  pages: pages,
-  tag: argv.tag
-};
-
-if (argv.destination !== undefined) {
-  options.destination = argv.destination;
-}
+var options = argv;
+options.pages = pages;
 
 // Start download pages.
-var blog = new TumblrScraper(argv.blog);
-blog.getPhotos(options);
+var blog = new TumblrScraper(options.blog);
+blog.getPhotos(options, function(err, data) {});
 
 // Output render loop.
 var view = new cliOutput(blog);
