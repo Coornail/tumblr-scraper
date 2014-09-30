@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 'use strict';
 
 var TumblrScraper = require('./libs/tumblr-post-download');

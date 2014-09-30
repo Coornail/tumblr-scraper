@@ -6,6 +6,7 @@
     "type" : "git",
     "url" : "git@github.com:Coornail/tumblr-scraper.git"
   },
+  "bin" : { "tumblr-scraper" : "./index.js" },
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/.bin/gulp lint:js"
