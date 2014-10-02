@@ -8,6 +8,7 @@ var _ = require('lodash');
 
 var TumblrScraperCliView = function(blog) {
   this.blog = blog;
+  this.fsStatCache = [];
 };
 
 /**
@@ -16,7 +17,7 @@ var TumblrScraperCliView = function(blog) {
 TumblrScraperCliView.prototype.renderLoop = function() {
   process.stdout.write(new Buffer('G1tIG1sySg==', 'base64'));
   var that = this;
-  this.loop = setInterval(function() {that.draw();}, 1000);
+  this.loop = setInterval(function() {that.draw();}, 100);
   this.draw();
 };
 
@@ -36,8 +37,18 @@ TumblrScraperCliView.prototype.drawStatusLine = function(item) {
       break;
 
     default:
-      var stats = fs.statSync(item.path);
-      clivas.line('  ' + logSymbols.success + ' {64:' + item.path + '} ' + '{yellow:' + filesize(stats.size) + '}');
+      // Load file size asynchronously.
+      var that = this;
+      fs.stat(item.path, function writeFsStatCache(err, stat) {
+        that.fsStatCache[item.path] = filesize(stat.size);
+      });
+
+      var statResult = '';
+      if (this.fsStatCache[item.path] !== undefined) {
+        statResult = '{yellow:' + this.fsStatCache[item.path] + '}';
+      }
+
+      clivas.line('  ' + logSymbols.success + ' {64:' + item.path + '} ' + statResult);
   }
 };
 
@@ -57,7 +68,11 @@ TumblrScraperCliView.prototype.draw = function() {
     clivas.line(' ...');
     fromLines++;
   }
-  _.tail(this.blog.status, fromLines).forEach(this.drawStatusLine);
+
+  var that = this;
+  _.tail(this.blog.status, fromLines).forEach(function drawStatusLine(item) {
+    that.drawStatusLine(item);
+  });
 
   if (this.blog.numberOfImages === this.blog.status.length) {
     clearInterval(this.loop);
