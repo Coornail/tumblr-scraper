@@ -9,6 +9,7 @@ var _ = require('lodash');
 var TumblrScraperCliView = function(blog) {
   this.blog = blog;
   this.fsStatCache = [];
+  this.fps = 15;
 };
 
 /**
@@ -17,7 +18,7 @@ var TumblrScraperCliView = function(blog) {
 TumblrScraperCliView.prototype.renderLoop = function() {
   process.stdout.write(new Buffer('G1tIG1sySg==', 'base64'));
   var that = this;
-  this.loop = setInterval(function() {that.draw();}, 100);
+  this.loop = setInterval(function() {that.draw();}, (1000/this.fps));
   this.draw();
 };
 
@@ -56,26 +57,39 @@ TumblrScraperCliView.prototype.drawStatusLine = function(item) {
  * Callback to draw the cli output.
  */
 TumblrScraperCliView.prototype.draw = function() {
-  clivas.clear();
-  clivas.line(logSymbols.info + ' Downloading ' + this.blog.pages.length + ' pages from ' + this.blog.blogName + ((this.blog.tag !== '') ? (' (tag: ' + this.blog.tag + ')') : ''));
-  if (this.blog.numberOfImages !== undefined) {
-    var symbol = (this.blog.numberOfImages === 0 ) ? logSymbols.warning : logSymbols.info;
-    clivas.line(symbol + ' Downloaded ' + this.blog.status.length + '/' + this.blog.numberOfImages);
-  }
-
-  var fromLines = this.blog.status.length - clivas.height + 3;
-  if (fromLines > 0) {
-    clivas.line(' ...');
-    fromLines++;
-  }
-
   var that = this;
-  _.tail(this.blog.status, fromLines).forEach(function drawStatusLine(item) {
-    that.drawStatusLine(item);
-  });
 
+  var drawOutput = function() {
+    clivas.clear();
+
+    // Header.
+    clivas.line(logSymbols.info + ' Downloading ' + that.blog.pages.length + ' pages from ' + that.blog.blogName + ((that.blog.tag !== '') ? (' (tag: ' + that.blog.tag + ')') : ''));
+    if (that.blog.numberOfImages !== undefined) {
+      var symbol = (that.blog.numberOfImages === 0 ) ? logSymbols.warning : logSymbols.info;
+      clivas.line(symbol + ' Downloaded ' + that.blog.status.length + '/' + that.blog.numberOfImages);
+    }
+
+    // Status lines.
+    var fromLines = that.blog.status.length - clivas.height + 3;
+    if (fromLines > 0) {
+      clivas.line(' ...');
+      fromLines++;
+    }
+
+    _.tail(that.blog.status, fromLines).forEach(function drawStatusLine(item) {
+      that.drawStatusLine(item);
+    });
+  };
+
+  drawOutput();
+
+  // Remove render loop when we've finished.
   if (this.blog.numberOfImages === this.blog.status.length) {
     clearInterval(this.loop);
+
+    // Schedule a final frame in 10ms (to render the filesize of the last
+    // lines).
+    setTimeout(drawOutput, 10);
   }
 };
 
