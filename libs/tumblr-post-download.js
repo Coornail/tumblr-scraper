@@ -59,7 +59,7 @@ TumblrScraper.prototype.processPage = function(options, callback) {
   var maxPostsPerPage = 20;
 
   options.limit = maxPostsPerPage;
-  options.offset = (options.page === undefined) ? 0 : options.page * maxPostsPerPage;
+  options.offset = (options.page || 0) * maxPostsPerPage;
 
   var client = tumblr.createClient(require('../config/tumblr.json'));
   if (!client) {
@@ -101,7 +101,6 @@ TumblrScraper.prototype.downloadImages = function(images) {
       new DownloadHandler()
         .get(image).dest(destination)
         .run(function(err) {
-
           if (err) {
             callback(err);
             report.status = 'error';
