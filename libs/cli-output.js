@@ -52,7 +52,11 @@ TumblrScraperCliView.prototype.draw = function() {
     clivas.line(symbol + ' Downloaded ' + this.blog.status.length + '/' + this.blog.numberOfImages);
   }
 
-  var fromLines = this.blog.status.length - 32;
+  var fromLines = this.blog.status.length - clivas.height + 3;
+  if (fromLines > 0) {
+    clivas.line(' ...');
+    fromLines++;
+  }
   _.tail(this.blog.status, fromLines).forEach(this.drawStatusLine);
 
   if (this.blog.numberOfImages === this.blog.status.length) {
