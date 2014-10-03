@@ -6,8 +6,10 @@ var filesize = require('filesize');
 var fs = require('fs');
 var _ = require('lodash');
 
-var TumblrScraperCliView = function(blog) {
-  this.blog = blog;
+var TumblrScraperCliView = function(blogStream, downloader) {
+  this.blog = blogStream;
+  this.downloader = downloader;
+
   this.fsStatCache = [];
   this.fps = 15;
 };
@@ -20,6 +22,10 @@ TumblrScraperCliView.prototype.renderLoop = function() {
   var that = this;
   this.loop = setInterval(function() {that.draw();}, (1000/this.fps));
   this.draw();
+};
+
+TumblrScraperCliView.prototype.stopRenderLoop = function() {
+  clearInterval(this.loop);
 };
 
 /**
@@ -63,34 +69,40 @@ TumblrScraperCliView.prototype.draw = function() {
     clivas.clear();
 
     // Header.
-    clivas.line(logSymbols.info + ' Downloading ' + that.blog.pages.length + ' pages from ' + that.blog.blogName + ((that.blog.tag !== '') ? (' (tag: ' + that.blog.tag + ')') : ''));
-    if (that.blog.numberOfImages !== undefined) {
+    clivas.line(that.getHeader());
+    if (that.blog.images !== undefined) {
       var symbol = (that.blog.numberOfImages === 0 ) ? logSymbols.warning : logSymbols.info;
-      clivas.line(symbol + ' Downloaded ' + that.blog.status.length + '/' + that.blog.numberOfImages);
+      clivas.line(symbol + ' Downloaded ' + that.downloader.status.length + '/' + that.blog.images);
     }
 
     // Status lines.
-    var fromLines = that.blog.status.length - clivas.height + 3;
+    var fromLines = that.downloader.status.length - clivas.height + 3;
     if (fromLines > 0) {
       clivas.line(' ...');
       fromLines++;
     }
 
-    _.tail(that.blog.status, fromLines).forEach(function drawStatusLine(item) {
+    _.tail(that.downloader.status, fromLines).forEach(function drawStatusLine(item) {
       that.drawStatusLine(item);
     });
   };
 
   drawOutput();
+};
 
-  // Remove render loop when we've finished.
-  if (this.blog.numberOfImages === this.blog.status.length) {
-    clearInterval(this.loop);
+TumblrScraperCliView.prototype.getHeader = function() {
+  var header = logSymbols.info;
 
-    // Schedule a final frame in 10ms (to render the filesize of the last
-    // lines).
-    setTimeout(drawOutput, 10);
+  header += ' Downloading images from ' + this.blog.options.blog;
+  if (this.blog.options.tag !== '') {
+    header += '(' + this.blog.options.tag + ')';
   }
+
+  if (!this.blog.finished) {
+    header += ' [Page ' + this.blog.page + ']';
+  }
+
+  return header;
 };
 
 module.exports = TumblrScraperCliView;

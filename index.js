@@ -2,9 +2,11 @@
 
 'use strict';
 
-var TumblrScraper = require('./libs/tumblr-post-download');
+var TumblrPhotoStream = require('./libs/tumblr-photo-stream');
+var TumblrPhotoStreamDownloader = require('./libs/photo-stream-downloader');
 var cliOutput = require('./libs/cli-output');
 var _ = require('lodash');
+var through = require('through');
 
 var argv = require('yargs')
   .usage('Usage: --blog [blogname]')
@@ -35,10 +37,20 @@ var argv = require('yargs')
 var options = argv;
 options.pages = _.range(argv.maxPages);
 
-// Start download pages.
-var blog = new TumblrScraper(options.blog);
-blog.getPhotos(options);
+var blogStream = new TumblrPhotoStream(options);
+var downloader = new TumblrPhotoStreamDownloader(options);
+var view = new cliOutput(blogStream, downloader);
+
+blogStream.pipe(
+  through(
+    function data(chunk) {
+      this.push(chunk);
+    },
+    function end() {
+      view.stopRenderLoop();
+    }
+  ))
+  .pipe(downloader);
 
 // Output render loop.
-var view = new cliOutput(blog);
 view.renderLoop();
