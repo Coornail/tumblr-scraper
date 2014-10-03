@@ -65,29 +65,25 @@ TumblrScraperCliView.prototype.drawStatusLine = function(item) {
 TumblrScraperCliView.prototype.draw = function() {
   var that = this;
 
-  var drawOutput = function() {
-    clivas.clear();
+  clivas.clear();
 
-    // Header.
-    clivas.line(that.getHeader());
-    if (that.blog.images !== undefined) {
-      var symbol = (that.blog.numberOfImages === 0 ) ? logSymbols.warning : logSymbols.info;
-      clivas.line(symbol + ' Downloaded ' + that.downloader.status.length + '/' + that.blog.images);
-    }
+  // Header.
+  clivas.line(this.getHeader());
+  if (this.blog.images !== undefined) {
+    var symbol = (this.blog.numberOfImages === 0 ) ? logSymbols.warning : logSymbols.info;
+    clivas.line(symbol + ' Downloaded ' + this.downloader.status.length + '/' + this.blog.images);
+  }
 
-    // Status lines.
-    var fromLines = that.downloader.status.length - clivas.height + 3;
-    if (fromLines > 0) {
-      clivas.line(' ...');
-      fromLines++;
-    }
+  // Status lines.
+  var fromLines = this.downloader.status.length - clivas.height + 3;
+  if (fromLines > 0) {
+    clivas.line(' ...');
+    fromLines++;
+  }
 
-    _.tail(that.downloader.status, fromLines).forEach(function drawStatusLine(item) {
-      that.drawStatusLine(item);
-    });
-  };
-
-  drawOutput();
+  _.tail(this.downloader.status, fromLines).forEach(function drawStatusLine(item) {
+    that.drawStatusLine(item);
+  });
 };
 
 TumblrScraperCliView.prototype.getHeader = function() {
