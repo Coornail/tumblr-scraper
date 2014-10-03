@@ -25,7 +25,13 @@ TumblrScraperCliView.prototype.renderLoop = function() {
 };
 
 TumblrScraperCliView.prototype.stopRenderLoop = function() {
+  var that = this;
+
   clearInterval(this.loop);
+
+  // Schedule one final draw to show the filesize of the last items.
+  setTimeout(function(){that.draw()}, 100);
+  this.draw();
 };
 
 /**
@@ -64,13 +70,12 @@ TumblrScraperCliView.prototype.drawStatusLine = function(item) {
  */
 TumblrScraperCliView.prototype.draw = function() {
   var that = this;
-
   clivas.clear();
 
   // Header.
   clivas.line(this.getHeader());
   if (this.blog.images !== undefined) {
-    var symbol = (this.blog.numberOfImages === 0 ) ? logSymbols.warning : logSymbols.info;
+    var symbol = (this.blog.images === 0 ) ? logSymbols.warning : logSymbols.info;
     clivas.line(symbol + ' Downloaded ' + this.downloader.status.length + '/' + this.blog.images);
   }
 
@@ -91,7 +96,7 @@ TumblrScraperCliView.prototype.getHeader = function() {
 
   header += ' Downloading images from ' + this.blog.options.blog;
   if (this.blog.options.tag !== '') {
-    header += '(' + this.blog.options.tag + ')';
+    header += ' (' + this.blog.options.tag + ')';
   }
 
   if (!this.blog.finished) {

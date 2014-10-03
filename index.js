@@ -41,16 +41,11 @@ var blogStream = new TumblrPhotoStream(options);
 var downloader = new TumblrPhotoStreamDownloader(options);
 var view = new cliOutput(blogStream, downloader);
 
-blogStream.pipe(
-  through(
-    function data(chunk) {
-      this.push(chunk);
-    },
-    function end() {
-      view.stopRenderLoop();
-    }
-  ))
-  .pipe(downloader);
+downloader.on('finish', function() {
+  view.stopRenderLoop();
+});
+
+blogStream.pipe(downloader);
 
 // Output render loop.
 view.renderLoop();
