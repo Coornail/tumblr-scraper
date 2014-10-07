@@ -16,12 +16,21 @@ function TumblrPhotoStream(options) {
   this.status = [];
   this.images = 0;
   this.finished = false;
+
+  this.pageStatus = [];
+  this.firstEmptyPage = Number.MAX_VALUE;
 }
 
 util.inherits(TumblrPhotoStream, Readable);
 
 TumblrPhotoStream.prototype._read = function() {
-  var that = this;
+  // We know we won't find anything after the first empty page.
+  if (this.page > this.firstEmptyPage || this.page >= this.options.maxPages) {
+    return;
+  }
+
+  // Mark page for downloading.
+  this.pageStatus[this.page] = -1;
 
   this.options.offset = this.page * this.options.limit;
 
@@ -30,6 +39,8 @@ TumblrPhotoStream.prototype._read = function() {
     throw new Error('Could not connect to Tumblr.');
   }
 
+  var that = this;
+  var page = this.page;
   client.posts(this.options.blog, this.options, function(err, data) {
     if (err) {
       throw new Error('Authentication failure.\nYou might have to set up config/tumblr.json first.');
@@ -40,22 +51,33 @@ TumblrPhotoStream.prototype._read = function() {
     var extractedPhotos = jsonPath.eval(data.posts, '*.photos.*.original_size.url');
     extractedPhotos = _.flatten(extractedPhotos);
 
-    // If we got no results back, we end the stream.
-    if (extractedPhotos.length === 0) {
+    extractedPhotos.forEach(function(item) {
+      that.images++;
+      that.push(item);
+    });
+
+    that.pageStatus[page] = extractedPhotos.length;
+
+    // Test if we can finish the stream.
+    if (extractedPhotos.length === 0 && page < that.firstEmptyPage) {
+      that.firstEmptyPage = page;
+    }
+
+    // If we got results back from all the pages we started downloading, we finish the stream.
+    if (that.isPagesFinished()) {
       that.finished = true;
-      that.push(null);
+      return that.push(null);
     }
-
-    if (!that.finished) {
-      extractedPhotos.forEach(function(item) {
-        that.images++;
-        that.push(item);
-      });
-    }
-
   });
 
   this.page++;
+};
+
+TumblrPhotoStream.prototype.isPagesFinished = function() {
+  var pagesQueued = _.first(this.pageStatus, this.firstEmptyPage);
+  var finishedQueuedPages = _.every(pagesQueued, function(item) {return item > -1;});
+
+  return (pagesQueued.length > 0 && finishedQueuedPages);
 };
 
 module.exports = TumblrPhotoStream;

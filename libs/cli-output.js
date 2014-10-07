@@ -30,7 +30,7 @@ TumblrScraperCliView.prototype.stopRenderLoop = function() {
   clearInterval(this.loop);
 
   // Schedule one final draw to show the filesize of the last items.
-  setTimeout(function(){that.draw()}, 100);
+  setTimeout(function(){that.draw();}, 100);
   this.draw();
 };
 
