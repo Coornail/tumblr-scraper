@@ -9,9 +9,10 @@ var _ = require('lodash');
 var TumblrScraperCliView = function(blogStream, downloader) {
   this.blog = blogStream;
   this.downloader = downloader;
-  this.drawTimer = null;
 
   this.fsStatCache = [];
+  this.drawTimer = null;
+  this.lastDrawEvent = 0;
 };
 
 /**
@@ -20,6 +21,7 @@ var TumblrScraperCliView = function(blogStream, downloader) {
 TumblrScraperCliView.prototype.renderLoop = function() {
   var that = this;
 
+  // Clear the screen.
   process.stdout.write(new Buffer('G1tIG1sySg==', 'base64'));
   this.draw();
 
@@ -28,12 +30,17 @@ TumblrScraperCliView.prototype.renderLoop = function() {
   });
 
   // Fire two draw events after a file has been downloaded.
-  this.downloader.on('fileDownloaded', function(filepath) {
+  this.downloader.on('fileDownloaded', function() {
+    // Rate limit draw event to one per 100ms to avoid blinking.
+    if (that.lastDrawEvent + 100 > Date.now()) {
+      return;
+    }
+
     that.draw();
     clearTimeout(that.drawTimer);
 
     // Wait for the fsStatCache to be populated.
-    that.drawTimer = setTimeout(function() {that.draw();}, 100);
+    that.drawTimer = setTimeout(function() {that.draw();}, 10);
   });
 
 };
@@ -84,6 +91,7 @@ TumblrScraperCliView.prototype.drawStatusLine = function(item) {
  */
 TumblrScraperCliView.prototype.draw = function() {
   var that = this;
+  this.lastDrawEvent = Date.now();
   clivas.clear();
 
   // Header.
