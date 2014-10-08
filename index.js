@@ -6,7 +6,7 @@ var TumblrPhotoStream = require('./libs/tumblr-photo-stream');
 var TumblrPhotoStreamDownloader = require('./libs/photo-stream-downloader');
 var cliOutput = require('./libs/cli-output');
 
-var argv = require('yargs')
+var options = require('yargs')
   .usage('Usage: --blog [blogname]')
   .demand('blog').alias('b').describe('blog', 'Name of the blog to scrape.')
   .options('tag', {
@@ -25,9 +25,6 @@ var argv = require('yargs')
     describe: 'Directory to download the images to.'
   })
   .argv;
-
-// Prepare options.
-var options = argv;
 
 var blogStream = new TumblrPhotoStream(options);
 var downloader = new TumblrPhotoStreamDownloader(options);
