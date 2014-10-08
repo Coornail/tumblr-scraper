@@ -5,6 +5,7 @@ var clivas = require('clivas');
 var filesize = require('filesize');
 var fs = require('fs');
 var _ = require('lodash');
+var sparkly = require('sparkly');
 
 var TumblrScraperCliView = function(blogStream, downloader) {
   this.blog = blogStream;
@@ -14,6 +15,9 @@ var TumblrScraperCliView = function(blogStream, downloader) {
   this.drawTimer = null;
   this.lastDrawEvent = 0;
   this.firstDrawEvent = 0;
+  this.speedLog = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+  this.drawLoop = null;
+  this.speedLogLoop = null;
 };
 
 /**
@@ -25,8 +29,10 @@ TumblrScraperCliView.prototype.renderLoop = function() {
 
   // Clear the screen.
   process.stdout.write(new Buffer('G1tIG1sySg==', 'base64'));
-  this.loop = setInterval(function() {that.draw();}, 1000);
+  this.drawLoop = setInterval(function() {that.draw();}, 1000);
   this.draw();
+
+  this.speedLogLoop = setInterval(function() {that.logSpeed();}, 1000);
 
   this.downloader.on('finish', function() {
     that.stopRenderLoop();
@@ -45,13 +51,28 @@ TumblrScraperCliView.prototype.renderLoop = function() {
     // Wait for the fsStatCache to be populated.
     that.drawTimer = setTimeout(function() {that.draw();}, 10);
   });
+};
 
+TumblrScraperCliView.prototype.logSpeed = function() {
+  var elapsedTime = Date.now() - this.firstDrawEvent;
+  var sum = _.reduce(this.fsStatCache, function(sum, num) {
+    return sum + num;
+  });
+
+  var averageSpeed = sum/elapsedTime*1000;
+  if (averageSpeed === undefined) {
+    averageSpeed = 0;
+  }
+
+  this.speedLog.push(averageSpeed);
+  this.speedLog = _.last(this.speedLog, 10);
 };
 
 TumblrScraperCliView.prototype.stopRenderLoop = function() {
   var that = this;
 
-  clearInterval(this.loop);
+  clearInterval(this.drawLoop);
+  clearInterval(this.speedLogLoop);
 
   // Schedule one final draw to show the filesize of the last items.
   setTimeout(function(){that.draw();}, 100);
@@ -129,6 +150,8 @@ TumblrScraperCliView.prototype.getDownloadedStats = function() {
     stats += "  Sum: {green:" + filesize(sum) + "}";
     stats += "  Avg. speed: {green:" + filesize(sum/elapsedTime*1000) + "/s}";
   }
+
+  stats += "  [{green:" + sparkly(this.speedLog) + "}]";
 
   return stats;
 };
