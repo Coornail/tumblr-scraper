@@ -9,19 +9,33 @@ var _ = require('lodash');
 var TumblrScraperCliView = function(blogStream, downloader) {
   this.blog = blogStream;
   this.downloader = downloader;
+  this.drawTimer = null;
 
   this.fsStatCache = [];
-  this.fps = 15;
 };
 
 /**
  * Sets up the render loop for drawing.
  */
 TumblrScraperCliView.prototype.renderLoop = function() {
-  process.stdout.write(new Buffer('G1tIG1sySg==', 'base64'));
   var that = this;
-  this.loop = setInterval(function() {that.draw();}, (1000/this.fps));
+
+  process.stdout.write(new Buffer('G1tIG1sySg==', 'base64'));
   this.draw();
+
+  this.downloader.on('finish', function() {
+    that.stopRenderLoop();
+  });
+
+  // Fire two draw events after a file has been downloaded.
+  this.downloader.on('fileDownloaded', function(filepath) {
+    that.draw();
+    clearTimeout(that.drawTimer);
+
+    // Wait for the fsStatCache to be populated.
+    that.drawTimer = setTimeout(function() {that.draw();}, 100);
+  });
+
 };
 
 TumblrScraperCliView.prototype.stopRenderLoop = function() {

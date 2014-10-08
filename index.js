@@ -26,15 +26,11 @@ var options = require('yargs')
   })
   .argv;
 
+// Populate controllers.
 var blogStream = new TumblrPhotoStream(options);
 var downloader = new TumblrPhotoStreamDownloader(options);
-var view = new cliOutput(blogStream, downloader);
-
-downloader.on('finish', function() {
-  view.stopRenderLoop();
-});
-
 blogStream.pipe(downloader);
 
-// Output render loop.
+// Start view.
+var view = new cliOutput(blogStream, downloader);
 view.renderLoop();

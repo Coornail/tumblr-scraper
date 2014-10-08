@@ -36,6 +36,7 @@ TumblrPhotoStreamDownloader.prototype._write = function(chunk, encoding, callbac
   if ((!this.options.force) && fs.existsSync(imagePath)) {
     report.status = 'skipped';
     this.status.push(report);
+    that.emit('fileDownloaded', report);
     callback();
   } else {
     new DownloadHandler()
@@ -48,6 +49,7 @@ TumblrPhotoStreamDownloader.prototype._write = function(chunk, encoding, callbac
         }
 
         that.status.push(report);
+        that.emit('fileDownloaded', report);
         callback();
       }
     );
