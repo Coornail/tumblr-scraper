@@ -145,11 +145,11 @@ TumblrScraperCliView.prototype.getDownloadedStats = function() {
 
   if (sum !== undefined) {
     var elapsedTime = Date.now() - this.firstDrawEvent;
-    stats += "  Sum: {10+green:" + filesize(sum) + "}";
-    stats += "  Avg. speed: {16+green:" + filesize(sum/elapsedTime*1000) + "/s}";
+    stats += '  Sum: {10+green:' + filesize(sum) + '}';
+    stats += '  Avg. speed: {16+green:' + filesize(sum/elapsedTime*1000) + '/s}';
   }
 
-  stats += "  [{green:" + sparkly(this.speedLog) + "}]";
+  stats += '  [{green:' + sparkly(this.speedLog) + '}]';
 
   return stats;
 };
