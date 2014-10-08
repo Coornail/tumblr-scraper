@@ -60,7 +60,7 @@ TumblrScraperCliView.prototype.logSpeed = function() {
   });
 
   var averageSpeed = sum/elapsedTime*1000;
-  if (averageSpeed === undefined) {
+  if (averageSpeed === undefined || isNaN(averageSpeed)) {
     averageSpeed = 0;
   }
 
@@ -87,7 +87,7 @@ TumblrScraperCliView.prototype.stopRenderLoop = function() {
 TumblrScraperCliView.prototype.drawStatusLine = function(item) {
   switch (item.status) {
     case 'skipped':
-      clivas.line('  ' + logSymbols.warning + ' {64:' + item.path + '} (skipped)');
+      clivas.line('  ' + logSymbols.warning + ' {70:' + item.path + '} (skipped)');
       break;
 
     case 'error':
@@ -106,7 +106,7 @@ TumblrScraperCliView.prototype.drawStatusLine = function(item) {
         statResult = '{yellow:' + filesize(this.fsStatCache[item.path]) + '}';
       }
 
-      clivas.line('  ' + logSymbols.success + ' {64:' + item.path + '} ' + statResult);
+      clivas.line('  ' + logSymbols.success + ' {70:' + item.path + '} ' + statResult);
   }
 };
 
@@ -136,10 +136,8 @@ TumblrScraperCliView.prototype.draw = function() {
 
 TumblrScraperCliView.prototype.getDownloadedStats = function() {
   var stats = '';
-  if (this.blog.images !== undefined) {
-    var symbol = (this.blog.images === 0 ) ? logSymbols.warning : logSymbols.info;
-    stats += symbol + ' Downloaded {green:' + this.downloader.status.length + '}/{green:' + this.blog.images + '}';
-  }
+  var symbol = (this.blog.images === 0 ) ? logSymbols.warning : logSymbols.info;
+  stats += symbol + ' Downloaded {10+green:' + this.downloader.status.length + '/' + this.blog.images + '}';
 
   var sum = _.reduce(this.fsStatCache, function(sum, num) {
     return sum + num;
@@ -147,8 +145,8 @@ TumblrScraperCliView.prototype.getDownloadedStats = function() {
 
   if (sum !== undefined) {
     var elapsedTime = Date.now() - this.firstDrawEvent;
-    stats += "  Sum: {green:" + filesize(sum) + "}";
-    stats += "  Avg. speed: {green:" + filesize(sum/elapsedTime*1000) + "/s}";
+    stats += "  Sum: {10+green:" + filesize(sum) + "}";
+    stats += "  Avg. speed: {16+green:" + filesize(sum/elapsedTime*1000) + "/s}";
   }
 
   stats += "  [{green:" + sparkly(this.speedLog) + "}]";
