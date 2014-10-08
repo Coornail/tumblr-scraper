@@ -5,6 +5,7 @@ var util = require('util');
 var path = require('path');
 var fs = require('fs');
 var DownloadHandler = require('download');
+var async = require('async');
 
 function TumblrPhotoStreamDownloader(options) {
   Writable.call(this, options);
@@ -15,10 +16,46 @@ function TumblrPhotoStreamDownloader(options) {
 
   this.options = options;
   this.status = [];
+  this.downloadQueue = async.queue(this.download, options.concurrency);
 }
 
 util.inherits(TumblrPhotoStreamDownloader, Writable);
 
+/**
+ * Async queue worker callback to download the file.
+ *
+ * @see TumblrPhotoStreamDownloader.prototype._write()
+ *
+ * @param task
+ *   Async queue task object.
+ *
+ * @param callback
+ */
+TumblrPhotoStreamDownloader.prototype.download = function(task, callback) {
+  var report = task.report;
+
+  new DownloadHandler()
+    .get(task.image).dest(task.destination)
+    .run(function(err) {
+      if (err) {
+        callback(err);
+        report.status = 'error';
+        report.error = err;
+        task.origin.status.push(report);
+      } else{
+        callback();
+        task.origin.status.push(report);
+      }
+      task.origin.emit('fileDownloaded', report);
+    }
+  );
+};
+
+/**
+ * Stream writer callback.
+ *
+ * Adds images to the download queue.
+ */
 TumblrPhotoStreamDownloader.prototype._write = function(chunk, encoding, callback) {
   var that = this;
 
@@ -39,20 +76,16 @@ TumblrPhotoStreamDownloader.prototype._write = function(chunk, encoding, callbac
     that.emit('fileDownloaded', report);
     callback();
   } else {
-    new DownloadHandler()
-      .get(image).dest(destination)
-      .run(function(err) {
-        if (err) {
-          callback(err);
-          report.status = 'error';
-          report.error = err;
-        }
+    // Add task to the queue.
+    var task = {
+      image: image,
+      destination: destination,
+      origin: this,
+      imagePath: imagePath,
+      report: report
+    };
 
-        that.status.push(report);
-        that.emit('fileDownloaded', report);
-        callback();
-      }
-    );
+    this.downloadQueue.push(task, callback);
   }
 };
 

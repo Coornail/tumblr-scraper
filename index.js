@@ -19,6 +19,11 @@ var options = require('yargs')
     default : Number.MAX_VALUE,
     describe: 'Maximum number of pages to scan.'
   })
+  .options('concurrency', {
+    alias : 'c',
+    default : 4,
+    describe: 'Number of threads to download the files.'
+  })
   .boolean('force').describe('force', 'Download images even if they exists in the current directory.').default('force', false)
   .options('destination', {
     alias : 'd',
