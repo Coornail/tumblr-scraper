@@ -4,7 +4,7 @@ Batch download images from a Tumblr blog.
 
 <img src="https://travis-ci.org/Coornail/tumblr-scraper.svg?branch=master" alt="Travis build" />&nbsp;<img src="https://david-dm.org/coornail/tumblr-scraper.png" alt="NodeJs dependencies" />
 
-<img src="https://i.imgur.com/vzmIIU7.png" alt="tumblr-scraper in action" width="400px" />
+<img src="https://i.imgur.com/vzmIIU7.png" alt="tumblr-scraper in action"/>
 
 To use
 ------
